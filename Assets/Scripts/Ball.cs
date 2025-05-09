@@ -14,7 +14,7 @@ public class Ball : MonoBehaviour
     
     private void OnCollisionExit(Collision other)
     {
-        var velocity = m_Rigidbody.velocity;
+        var velocity = m_Rigidbody.linearVelocity;
         
         //after a collision we accelerate a bit
         velocity += velocity.normalized * 0.01f;
@@ -31,6 +31,6 @@ public class Ball : MonoBehaviour
             velocity = velocity.normalized * 3.0f;
         }
 
-        m_Rigidbody.velocity = velocity;
+        m_Rigidbody.linearVelocity = velocity;
     }
 }

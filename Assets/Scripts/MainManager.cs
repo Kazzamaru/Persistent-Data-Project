@@ -1,5 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -10,16 +12,19 @@ public class MainManager : MonoBehaviour
     public int LineCount = 6;
     public Rigidbody Ball;
 
+    public Text CurrentScoreText;
     public Text ScoreText;
     public GameObject GameOverText;
-    
+    private string playerName;
+
     private bool m_Started = false;
     private int m_Points;
     
     private bool m_GameOver = false;
+    private int highScore;
+    public TMP_InputField nameInputField;
+    public GameObject nameHolder;
 
-    
-    // Start is called before the first frame update
     void Start()
     {
         const float step = 0.6f;
@@ -36,6 +41,18 @@ public class MainManager : MonoBehaviour
                 brick.onDestroyed.AddListener(AddPoint);
             }
         }
+
+        LoadHighScore();
+        CurrentScoreText.text = $"High Score: {playerName} {highScore}";
+    }
+
+    public void UpdateName()
+    {
+        playerName = nameInputField.text;
+        nameHolder.SetActive(false);
+        Debug.Log(playerName);
+        highScore = m_Points;
+        SaveHighScore();
     }
 
     private void Update()
@@ -71,6 +88,51 @@ public class MainManager : MonoBehaviour
     public void GameOver()
     {
         m_GameOver = true;
+        if (m_Points > highScore)
+        {
+            NewHighScore(m_Points);
+        }
         GameOverText.SetActive(true);
+    }
+
+    private void NewHighScore(int points)
+    {
+        nameHolder.SetActive(true);
+    }
+
+    [System.Serializable]
+    class SaveData 
+    {
+        public int highScore;
+        public string name;
+    }
+
+    public void SaveHighScore()
+    {
+        SaveData data = new SaveData();
+        data.highScore = highScore;
+        data.name = playerName;
+
+        string json = JsonUtility.ToJson(data);
+
+        File.WriteAllText(Application.persistentDataPath + "/savefile.json", json);
+    }
+
+    public void LoadHighScore()
+    {
+        string path = Application.persistentDataPath + "/savefile.json";
+        if (File.Exists(path))
+        {
+            string json = File.ReadAllText(path);
+            SaveData data = JsonUtility.FromJson<SaveData>(json);
+
+            highScore = data.highScore;
+            playerName = data.name;
+        }
+        else
+        {
+            highScore = 30;
+            playerName = "Some Loser";
+        }
     }
 }
